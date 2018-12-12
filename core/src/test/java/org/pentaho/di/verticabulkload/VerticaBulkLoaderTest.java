@@ -51,6 +51,7 @@ import java.util.List;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -106,6 +107,10 @@ public class VerticaBulkLoaderTest {
     doReturn( mock( VerticaCopyStream.class ) ).when( loader ).createVerticaCopyStream( anyString() );
   }
 
+  /**
+   * [PDI-17481] Testing the ability that if no connection is specified, we will mark it as a fail and log the
+   * appropriate reason to the user by throwing a KettleException.
+   */
   @Test
   public void testNoDatabaseConnection() {
     loaderMeta.setDatabaseMeta( null );
@@ -114,6 +119,8 @@ public class VerticaBulkLoaderTest {
     try {
       // Verify that the database connection being set to null throws a KettleException with the following message.
       loader.verifyDatabaseConnection();
+      // If the method does not throw a Kettle Exception, then the DB was set and not null for this test. Fail it.
+      fail( "Database Connection is not null, this fails the test." );
     } catch ( KettleException aKettleException ) {
       assertThat( aKettleException.getMessage(), containsString( "There is no connection defined in this step" ) );
     }
@@ -144,7 +151,7 @@ public class VerticaBulkLoaderTest {
     loaderData.db.setConnection( connection3 );
     try {
       rtn = loader.getVerticaConnection();
-      Assert.fail( "Expected IllegalStateException" );
+      fail( "Expected IllegalStateException" );
     } catch ( IllegalStateException expected ) {
 
     }
@@ -152,7 +159,7 @@ public class VerticaBulkLoaderTest {
     loaderData.db.setConnection( connection4 );
     try {
       rtn = loader.getVerticaConnection();
-      Assert.fail( "Expected IllegalStateException" );
+      fail( "Expected IllegalStateException" );
     } catch ( IllegalStateException expected ) {
 
     }
@@ -199,7 +206,7 @@ public class VerticaBulkLoaderTest {
         loader.processRow( loaderMeta, loaderData );
       }
     } catch ( BufferOverflowException e ) {
-      Assert.fail( e.getMessage() );
+      fail( e.getMessage() );
     }
 
     // then no BufferOverflowException should be thrown
@@ -251,7 +258,7 @@ public class VerticaBulkLoaderTest {
         loader.processRow( loaderMeta, loaderData );
       }
     } catch ( BufferOverflowException e ) {
-      Assert.fail( e.getMessage() );
+      fail( e.getMessage() );
     }
 
     // then no BufferOverflowException should be thrown
